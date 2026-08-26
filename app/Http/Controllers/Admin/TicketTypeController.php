@@ -96,4 +96,17 @@ class TicketTypeController extends Controller
         return redirect()->route('admin.ticket-types.index')
             ->with('success', 'Jenis tiket berhasil dihapus.');
     }
+
+    /**
+     * Remove multiple ticket types from storage.
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (!empty($ids)) {
+            TicketType::whereIn('id', $ids)->delete();
+            return redirect()->route('admin.ticket-types.index')->with('success', count($ids) . ' jenis tiket terpilih berhasil dihapus.');
+        }
+        return redirect()->route('admin.ticket-types.index')->with('error', 'Tidak ada jenis tiket yang dipilih.');
+    }
 }

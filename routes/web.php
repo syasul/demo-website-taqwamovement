@@ -29,6 +29,7 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     Route::get('/phases', function () {
         return view('admin.phases.index');
     })->name('phases.index');
+    Route::delete('/events/bulk', [\App\Http\Controllers\Admin\EventController::class, 'bulkDestroy'])->name('events.bulk-destroy');
     Route::resource('/events', \App\Http\Controllers\Admin\EventController::class)->except(['show']);
     Route::get('/speakers', function () {
         return view('admin.speakers.index');
@@ -58,8 +59,11 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     Route::post('/check-in/scan', [\App\Http\Controllers\Admin\CheckInController::class, 'processScan'])->name('check-in.scan');
 
     // CMS Extensions Resources CRUD
+    Route::delete('/ticket-types/bulk', [\App\Http\Controllers\Admin\TicketTypeController::class, 'bulkDestroy'])->name('ticket-types.bulk-destroy');
     Route::resource('/ticket-types', \App\Http\Controllers\Admin\TicketTypeController::class)->except(['show']);
+    Route::delete('/promo-codes/bulk', [\App\Http\Controllers\Admin\PromoCodeController::class, 'bulkDestroy'])->name('promo-codes.bulk-destroy');
     Route::resource('/promo-codes', \App\Http\Controllers\Admin\PromoCodeController::class)->except(['show']);
+    Route::delete('/event-sessions/bulk', [\App\Http\Controllers\Admin\EventSessionController::class, 'bulkDestroy'])->name('event-sessions.bulk-destroy');
     Route::resource('/event-sessions', \App\Http\Controllers\Admin\EventSessionController::class)->except(['show']);
     Route::get('/orders', [\App\Http\Controllers\Admin\OrderController::class, 'index'])->name('orders.index');
     Route::get('/reports', [\App\Http\Controllers\Admin\OrderController::class, 'report'])->name('reports.index');
@@ -91,6 +95,7 @@ require __DIR__.'/auth.php';
 Route::post('/checkout/callback', [\App\Http\Controllers\Checkout\PaymentCallbackController::class, 'handle'])->name('checkout.callback');
 Route::get('/checkout/{order:order_number}/status', [\App\Http\Controllers\Checkout\CheckoutController::class, 'status'])->name('checkout.status');
 Route::get('/checkout/{order:order_number}/status/json', [\App\Http\Controllers\Checkout\CheckoutController::class, 'checkStatusJson'])->name('checkout.status.json');
+Route::post('/checkout/{order:order_number}/simulate-pay', [\App\Http\Controllers\Checkout\CheckoutController::class, 'simulatePay'])->name('checkout.simulate-pay');
 
 Route::get('/design-system', function () {
     return view('pages.design-system');

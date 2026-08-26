@@ -140,6 +140,26 @@ class UserManager extends Component
         $this->loadUsers();
     }
 
+    public function deleteSelected(array $ids)
+    {
+        $ids = array_diff($ids, [auth()->id()]);
+        if (empty($ids)) {
+            session()->flash('error', 'Tidak ada user valid yang dapat dihapus.');
+            return;
+        }
+
+        $users = User::whereIn('id', $ids)->get();
+        foreach ($users as $user) {
+            activity()
+                ->performedOn($user)
+                ->log('menghapus user admin (bulk)');
+            $user->delete();
+        }
+
+        session()->flash('success', count($ids) . ' user terpilih berhasil dihapus.');
+        $this->loadUsers();
+    }
+
     public function render()
     {
         return view('livewire.admin.user-manager');

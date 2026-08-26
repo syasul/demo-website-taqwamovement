@@ -6,8 +6,8 @@
 <div 
     x-data="{ isOpen: false }"
     x-show="isOpen"
-    @open-modal.window="if ($event.detail === '{{ $id }}') isOpen = true"
-    @close-modal.window="if ($event.detail === '{{ $id }}') isOpen = false"
+    @open-modal.window="if ($event.detail === '{{ $id }}' || (typeof $event.detail === 'object' && $event.detail !== null && Object.values($event.detail).includes('{{ $id }}'))) isOpen = true"
+    @close-modal.window="if ($event.detail === '{{ $id }}' || (typeof $event.detail === 'object' && $event.detail !== null && Object.values($event.detail).includes('{{ $id }}'))) isOpen = false"
     @keydown.escape.window="isOpen = false"
     class="fixed inset-0 z-50 overflow-y-auto"
     style="display: none;"

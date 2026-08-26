@@ -138,6 +138,25 @@ class SpeakerManager extends Component
         $this->loadSpeakers();
     }
 
+    public function deleteSelected(array $ids)
+    {
+        if (empty($ids)) {
+            session()->flash('error', 'Tidak ada pembicara yang dipilih.');
+            return;
+        }
+
+        $speakers = Speaker::whereIn('id', $ids)->get();
+        foreach ($speakers as $speaker) {
+            activity()
+                ->performedOn($speaker)
+                ->log('menghapus pembicara (bulk)');
+            $speaker->delete();
+        }
+
+        session()->flash('success', count($ids) . ' pembicara terpilih berhasil dihapus.');
+        $this->loadSpeakers();
+    }
+
     public function render()
     {
         return view('livewire.admin.speaker-manager');

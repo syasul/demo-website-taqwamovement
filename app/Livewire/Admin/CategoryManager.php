@@ -128,6 +128,34 @@ class CategoryManager extends Component
         $this->loadCategories();
     }
 
+    public function deleteSelected(array $ids)
+    {
+        if (empty($ids)) {
+            session()->flash('error', 'Tidak ada kategori yang dipilih.');
+            return;
+        }
+
+        $categories = Category::whereIn('id', $ids)->get();
+        $deletedCount = 0;
+        foreach ($categories as $category) {
+            if ($category->posts()->exists()) {
+                continue;
+            }
+            activity()
+                ->performedOn($category)
+                ->log('menghapus kategori blog (bulk)');
+            $category->delete();
+            $deletedCount++;
+        }
+
+        if ($deletedCount > 0) {
+            session()->flash('success', $deletedCount . ' kategori terpilih berhasil dihapus.');
+        } else {
+            session()->flash('error', 'Kategori terpilih tidak dapat dihapus karena memiliki artikel aktif.');
+        }
+        $this->loadCategories();
+    }
+
     public function render()
     {
         return view('livewire.admin.category-manager');

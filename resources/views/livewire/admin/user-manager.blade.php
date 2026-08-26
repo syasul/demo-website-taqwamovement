@@ -1,16 +1,27 @@
-<div>
+<div x-data="{ selected: [] }">
     <!-- Page Actions Header -->
     <div class="mb-6 flex justify-between items-center">
         <p class="text-caption text-brand-ink/60">Kelola daftar akun administrator dan hak akses role.</p>
-        <button 
-            @click="$dispatch('open-modal', 'user-modal')" 
-            wire:click="resetFields"
-            type="button" 
-            class="inline-flex items-center justify-center px-4 py-2.5 rounded-full text-brand-white bg-brand-primary hover:bg-brand-secondary font-medium tracking-wide text-caption shadow-brand-soft transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-brand-accent/50"
-            id="btn-add-user"
-        >
-            + Tambah User
-        </button>
+        <div class="flex items-center gap-3">
+            <button 
+                x-show="selected.length > 0"
+                @click="if(confirm('Apakah Anda yakin ingin menghapus ' + selected.length + ' user terpilih?')) { $wire.deleteSelected(selected).then(() => selected = []) }"
+                type="button" 
+                class="inline-flex items-center justify-center px-4 py-2.5 rounded-full text-brand-white bg-red-600 hover:bg-red-700 font-medium tracking-wide text-caption shadow-brand-soft hover:-translate-y-0.5 transition-all duration-300 focus:outline-none"
+                style="display: none;"
+            >
+                Hapus Terpilih (<span x-text="selected.length"></span>)
+            </button>
+            <button 
+                @click="$dispatch('open-modal', 'user-modal')" 
+                wire:click="resetFields"
+                type="button" 
+                class="inline-flex items-center justify-center px-4 py-2.5 rounded-full text-brand-white bg-brand-primary hover:bg-brand-secondary font-medium tracking-wide text-caption shadow-brand-soft transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-brand-accent/50"
+                id="btn-add-user"
+            >
+                + Tambah User
+            </button>
+        </div>
     </div>
 
     <!-- Data Table Card -->
@@ -19,18 +30,30 @@
             <table class="w-full text-left border-collapse" aria-label="Users list">
                 <thead>
                     <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-brand-ink/50 uppercase tracking-wider">
-                        <th class="px-6 py-4 w-20 text-center">No</th>
+                        <th class="px-6 py-4 w-12 text-center">
+                            <input 
+                                type="checkbox" 
+                                @change="let check = $el.checked; selected = check ? [@foreach($users as $u)'{{ $u->id }}',@endforeach] : []"
+                                :checked="selected.length === {{ count($users) }} && {{ count($users) }} > 0"
+                                class="rounded text-brand-primary focus:ring-brand-accent w-4 h-4 border-slate-200 cursor-pointer"
+                            />
+                        </th>
                         <th class="px-6 py-4">Nama Lengkap</th>
                         <th class="px-6 py-4">Email</th>
                         <th class="px-6 py-4 w-36 text-center">Role</th>
-                        <th class="px-6 py-4 w-48 text-right">Aksi</th>
+                        <th class="px-6 py-4 w-20 text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-body text-brand-ink/80">
                     @forelse($users as $index => $u)
-                        <tr class="hover:bg-slate-50/50 transition-colors">
-                            <td class="px-6 py-4 text-center font-bold text-brand-primary">
-                                {{ $index + 1 }}
+                        <tr class="hover:bg-slate-50/50 transition-colors" :class="selected.includes('{{ $u->id }}') ? 'bg-brand-primary/[0.01]' : ''">
+                            <td class="px-6 py-4 text-center whitespace-nowrap">
+                                <input 
+                                    type="checkbox" 
+                                    value="{{ $u->id }}" 
+                                    x-model="selected"
+                                    class="rounded text-brand-primary focus:ring-brand-accent w-4 h-4 border-slate-200 cursor-pointer"
+                                />
                             </td>
                             <td class="px-6 py-4 font-semibold text-brand-primary flex items-center gap-2">
                                 <div class="w-8 h-8 rounded-full bg-brand-primary/10 text-brand-primary flex items-center justify-center font-bold text-xs uppercase shrink-0">
@@ -48,28 +71,37 @@
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider border bg-emerald-50 text-emerald-700 border-emerald-200">Editor</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-right space-x-2">
-                                <button 
-                                    wire:click="edit({{ $u->id }})" 
-                                    type="button" 
-                                    class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold text-brand-primary border border-brand-primary/10 hover:bg-brand-primary/5 transition-all"
-                                >
-                                    Ubah
-                                </button>
-                                @if($u->id !== auth()->id())
+                            <td class="px-6 py-4 text-center whitespace-nowrap">
+                                <div x-data="{ open: false }" class="relative inline-block text-left">
                                     <button 
-                                        wire:click="confirmDelete({{ $u->id }})" 
+                                        @click="open = !open" 
+                                        @click.away="open = false" 
                                         type="button" 
-                                        class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold text-red-600 border border-red-100 hover:bg-red-50 transition-all"
+                                        class="p-2 hover:bg-slate-100 rounded-full transition-colors text-brand-ink/50 hover:text-brand-ink focus:outline-none"
                                     >
-                                        Hapus
+                                        <svg class="w-4 h-4 mx-auto" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path></svg>
                                     </button>
-                                @endif
+                                    <div 
+                                        x-show="open" 
+                                        x-transition 
+                                        class="absolute right-0 mt-1 w-32 rounded-xl bg-white border border-slate-200 shadow-lg py-1 z-30 text-left text-caption font-semibold"
+                                        style="display: none;"
+                                    >
+                                        <button wire:click="edit({{ $u->id }})" type="button" class="w-full text-left px-4 py-2 text-brand-primary hover:bg-slate-50 transition-colors">
+                                            Edit
+                                        </button>
+                                        @if($u->id !== auth()->id())
+                                            <button wire:click="confirmDelete({{ $u->id }})" type="button" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition-colors">
+                                                Hapus
+                                            </button>
+                                        @endif
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-12 text-center text-caption text-brand-ink/50">
+                            <td colspan="6" class="px-6 py-12 text-center text-caption text-brand-ink/50">
                                 Belum ada user admin. Klik + Tambah User untuk memulai.
                             </td>
                         </tr>

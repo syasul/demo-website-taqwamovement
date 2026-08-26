@@ -1,7 +1,18 @@
-<div>
+<div x-data="{ selected: [] }">
     <!-- Table Filters Header -->
     <div class="bg-brand-white border border-slate-200 p-5 rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.02)] mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto flex-grow">
+        <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto flex-grow items-center">
+            <!-- Bulk Delete Action -->
+            <button 
+                x-show="selected.length > 0"
+                @click="if(confirm('Apakah Anda yakin ingin menghapus ' + selected.length + ' artikel terpilih?')) { $wire.deleteSelected(selected).then(() => selected = []) }"
+                type="button" 
+                class="inline-flex items-center justify-center px-4 py-2.5 rounded-full text-brand-white bg-red-600 hover:bg-red-700 font-medium tracking-wide text-caption shadow-brand-soft focus:outline-none shrink-0"
+                style="display: none;"
+            >
+                Hapus Terpilih (<span x-text="selected.length"></span>)
+            </button>
+
             <!-- Search bar -->
             <div class="relative w-full md:w-72">
                 <input 
@@ -31,7 +42,7 @@
             </select>
         </div>
 
-        <a href="{{ route('admin.posts.create') }}" class="w-full md:w-auto inline-flex items-center justify-center px-4 py-2.5 rounded-full text-brand-white bg-brand-primary hover:bg-brand-secondary font-medium tracking-wide text-caption shadow-brand-soft">
+        <a href="{{ route('admin.posts.create') }}" class="w-full md:w-auto inline-flex items-center justify-center px-4 py-2.5 rounded-full text-brand-white bg-brand-primary hover:bg-brand-secondary font-medium tracking-wide text-caption shadow-brand-soft shrink-0">
             + Tulis Artikel
         </a>
     </div>
@@ -42,18 +53,34 @@
             <table class="w-full text-left border-collapse" aria-label="Articles list">
                 <thead>
                     <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-brand-ink/50 uppercase tracking-wider">
+                        <th class="px-6 py-4 w-12 text-center">
+                            <input 
+                                type="checkbox" 
+                                @change="let check = $el.checked; selected = check ? [@foreach($posts as $post)'{{ $post->id }}',@endforeach] : []"
+                                :checked="selected.length === {{ count($posts) }} && {{ count($posts) }} > 0"
+                                class="rounded text-brand-primary focus:ring-brand-accent w-4 h-4 border-slate-200 cursor-pointer"
+                            />
+                        </th>
                         <th class="px-6 py-4">Judul Artikel</th>
                         <th class="px-6 py-4">Kategori</th>
                         <th class="px-6 py-4">Penulis</th>
                         <th class="px-6 py-4 text-center">Tanggal Rilis</th>
                         <th class="px-6 py-4 text-center">Views</th>
                         <th class="px-6 py-4 text-center">Status</th>
-                        <th class="px-6 py-4 w-36 text-right">Aksi</th>
+                        <th class="px-6 py-4 w-20 text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-body text-brand-ink/80">
                     @forelse($posts as $post)
-                        <tr class="hover:bg-slate-50/50 transition-colors">
+                        <tr class="hover:bg-slate-50/50 transition-colors" :class="selected.includes('{{ $post->id }}') ? 'bg-brand-primary/[0.01]' : ''">
+                            <td class="px-6 py-4 text-center whitespace-nowrap">
+                                <input 
+                                    type="checkbox" 
+                                    value="{{ $post->id }}" 
+                                    x-model="selected"
+                                    class="rounded text-brand-primary focus:ring-brand-accent w-4 h-4 border-slate-200 cursor-pointer"
+                                />
+                            </td>
                             <td class="px-6 py-4 font-semibold text-brand-primary">
                                 {{ $post->title }}
                             </td>
@@ -76,21 +103,39 @@
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider border bg-slate-100 text-slate-700 border-slate-200">Draft</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-right whitespace-nowrap">
-                                <div class="flex items-center justify-end gap-3">
-                                    <a href="{{ route('admin.posts.edit', $post->id) }}" class="p-1.5 text-brand-primary hover:bg-brand-primary/5 rounded-lg font-semibold text-caption transition-colors">Edit</a>
-                                    
-                                    <form method="POST" action="{{ route('admin.posts.destroy', $post->id) }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus artikel ini?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg font-semibold text-caption transition-colors">Hapus</button>
-                                    </form>
+                            <td class="px-6 py-4 text-center whitespace-nowrap">
+                                <div x-data="{ open: false }" class="relative inline-block text-left">
+                                    <button 
+                                        @click="open = !open" 
+                                        @click.away="open = false" 
+                                        type="button" 
+                                        class="p-2 hover:bg-slate-100 rounded-full transition-colors text-brand-ink/50 hover:text-brand-ink focus:outline-none"
+                                    >
+                                        <svg class="w-4 h-4 mx-auto" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path></svg>
+                                    </button>
+                                    <div 
+                                        x-show="open" 
+                                        x-transition 
+                                        class="absolute right-0 mt-1 w-32 rounded-xl bg-white border border-slate-200 shadow-lg py-1 z-30 text-left text-caption font-semibold"
+                                        style="display: none;"
+                                    >
+                                        <a href="{{ route('admin.posts.edit', $post->id) }}" class="block px-4 py-2 text-brand-primary hover:bg-slate-50 transition-colors">
+                                            Edit
+                                        </a>
+                                        <form method="POST" action="{{ route('admin.posts.destroy', $post->id) }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus artikel ini?');" class="block w-full">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition-colors">
+                                                Hapus
+                                            </button>
+                                        </form>
+                                    </div>
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-12 text-center text-caption text-brand-ink/50 italic">
+                            <td colspan="8" class="px-6 py-12 text-center text-caption text-brand-ink/50 italic">
                                 Belum ada artikel yang diterbitkan.
                             </td>
                         </tr>

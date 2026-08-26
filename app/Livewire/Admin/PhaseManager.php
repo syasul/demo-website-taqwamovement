@@ -165,6 +165,25 @@ class PhaseManager extends Component
         $this->loadPhases();
     }
 
+    public function deleteSelected(array $ids)
+    {
+        if (empty($ids)) {
+            session()->flash('error', 'Tidak ada fase yang dipilih.');
+            return;
+        }
+
+        $phases = Phase::whereIn('id', $ids)->get();
+        foreach ($phases as $phase) {
+            activity()
+                ->performedOn($phase)
+                ->log('menghapus fase event (bulk)');
+            $phase->delete();
+        }
+
+        session()->flash('success', count($ids) . ' fase terpilih berhasil dihapus.');
+        $this->loadPhases();
+    }
+
     public function render()
     {
         return view('livewire.admin.phase-manager');

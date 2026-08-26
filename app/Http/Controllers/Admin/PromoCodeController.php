@@ -92,4 +92,17 @@ class PromoCodeController extends Controller
         return redirect()->route('admin.promo-codes.index')
             ->with('success', 'Kode promo berhasil dihapus.');
     }
+
+    /**
+     * Remove multiple promo codes from storage.
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (!empty($ids)) {
+            PromoCode::whereIn('id', $ids)->delete();
+            return redirect()->route('admin.promo-codes.index')->with('success', count($ids) . ' kode promo terpilih berhasil dihapus.');
+        }
+        return redirect()->route('admin.promo-codes.index')->with('error', 'Tidak ada kode promo yang dipilih.');
+    }
 }

@@ -78,6 +78,28 @@ class InboxTable extends Component
         }
     }
 
+    public function deleteSelected(array $ids)
+    {
+        if (empty($ids)) {
+            session()->flash('error', 'Tidak ada pesan yang dipilih.');
+            return;
+        }
+
+        $messages = ContactMessage::whereIn('id', $ids)->get();
+        foreach ($messages as $message) {
+            activity()
+                ->performedOn($message)
+                ->log('menghapus pesan masuk (bulk)');
+            $message->delete();
+        }
+
+        session()->flash('success', count($ids) . ' pesan terpilih berhasil dihapus.');
+        if (in_array($this->selectedMessageId, $ids)) {
+            $this->viewingMessage = null;
+            $this->dispatch('close-modal', 'inbox-detail-modal');
+        }
+    }
+
     public function render()
     {
         $query = ContactMessage::orderBy('created_at', 'desc');

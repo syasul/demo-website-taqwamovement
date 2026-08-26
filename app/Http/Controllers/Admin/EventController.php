@@ -46,4 +46,23 @@ class EventController extends Controller
 
         return redirect()->route('admin.events.index')->with('success', 'Event berhasil di-soft-delete.');
     }
+
+    /**
+     * Remove multiple events from storage.
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (!empty($ids)) {
+            $events = Event::whereIn('id', $ids)->get();
+            foreach ($events as $event) {
+                activity()
+                    ->performedOn($event)
+                    ->log('menghapus event (bulk)');
+                $event->delete();
+            }
+            return redirect()->route('admin.events.index')->with('success', count($ids) . ' event terpilih berhasil dihapus.');
+        }
+        return redirect()->route('admin.events.index')->with('error', 'Tidak ada event yang dipilih.');
+    }
 }

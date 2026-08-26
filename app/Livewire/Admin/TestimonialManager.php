@@ -154,6 +154,25 @@ class TestimonialManager extends Component
         $this->loadTestimonials();
     }
 
+    public function deleteSelected(array $ids)
+    {
+        if (empty($ids)) {
+            session()->flash('error', 'Tidak ada data yang dipilih.');
+            return;
+        }
+
+        $testimonials = Testimonial::whereIn('id', $ids)->get();
+        foreach ($testimonials as $testimonial) {
+            activity()
+                ->performedOn($testimonial)
+                ->log('menghapus testimoni/feature (bulk)');
+            $testimonial->delete();
+        }
+
+        session()->flash('success', count($ids) . ' data terpilih berhasil dihapus.');
+        $this->loadTestimonials();
+    }
+
     public function render()
     {
         return view('livewire.admin.testimonial-manager');

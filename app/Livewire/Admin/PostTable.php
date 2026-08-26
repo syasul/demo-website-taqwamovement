@@ -55,4 +55,22 @@ class PostTable extends Component
             'categories' => $categories,
         ]);
     }
+
+    public function deleteSelected(array $ids)
+    {
+        if (empty($ids)) {
+            session()->flash('error', 'Tidak ada artikel yang dipilih.');
+            return;
+        }
+
+        $posts = Post::whereIn('id', $ids)->get();
+        foreach ($posts as $post) {
+            activity()
+                ->performedOn($post)
+                ->log('menghapus artikel blog (bulk)');
+            $post->delete();
+        }
+
+        session()->flash('success', count($ids) . ' artikel terpilih berhasil dihapus.');
+    }
 }

@@ -1,16 +1,27 @@
-<div>
+<div x-data="{ selected: [] }">
     <!-- Page Actions Header -->
-    <div class="mb-6 flex justify-between items-center">
+    <div class="mb-6 flex justify-between items-center flex-wrap gap-4">
         <p class="text-caption text-brand-ink/60">Kelola value proposition features (kolom fitur beranda) dan testimonial alumni peserta.</p>
-        <button 
-            @click="$dispatch('open-modal', 'testimonial-modal')" 
-            wire:click="resetFields"
-            type="button" 
-            class="inline-flex items-center justify-center px-4 py-2.5 rounded-full text-brand-white bg-brand-primary hover:bg-brand-secondary font-medium tracking-wide text-caption shadow-brand-soft transition-all duration-300"
-            id="btn-add-testimonial"
-        >
-            + Tambah Baru
-        </button>
+        <div class="flex items-center gap-3">
+            <button 
+                x-show="selected.length > 0"
+                @click="if(confirm('Apakah Anda yakin ingin menghapus ' + selected.length + ' data terpilih?')) { $wire.deleteSelected(selected).then(() => selected = []) }"
+                type="button" 
+                class="inline-flex items-center justify-center px-4 py-2.5 rounded-full text-brand-white bg-red-600 hover:bg-red-700 font-medium tracking-wide text-caption shadow-brand-soft hover:-translate-y-0.5 transition-all duration-300 focus:outline-none"
+                style="display: none;"
+            >
+                Hapus Terpilih (<span x-text="selected.length"></span>)
+            </button>
+            <button 
+                @click="$dispatch('open-modal', 'testimonial-modal')" 
+                wire:click="resetFields"
+                type="button" 
+                class="inline-flex items-center justify-center px-4 py-2.5 rounded-full text-brand-white bg-brand-primary hover:bg-brand-secondary font-medium tracking-wide text-caption shadow-brand-soft transition-all duration-300"
+                id="btn-add-testimonial"
+            >
+                + Tambah Baru
+            </button>
+        </div>
     </div>
 
     <!-- Section 1: Features (Value Proposition) -->
@@ -21,17 +32,33 @@
             <table class="w-full text-left border-collapse" aria-label="Features list">
                 <thead>
                     <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-brand-ink/50 uppercase tracking-wider">
+                        <th class="px-6 py-4 w-12 text-center">
+                            <input 
+                                type="checkbox" 
+                                @change="let check = $el.checked; selected = check ? [@foreach($testimonials->where('type', 'feature') as $item)'{{ $item->id }}',@endforeach] : []"
+                                :checked="selected.length === {{ $testimonials->where('type', 'feature')->count() }} && {{ $testimonials->where('type', 'feature')->count() }} > 0"
+                                class="rounded text-brand-primary focus:ring-brand-accent w-4 h-4 border-slate-200 cursor-pointer"
+                            />
+                        </th>
                         <th class="px-6 py-4 w-20 text-center">Urutan</th>
                         <th class="px-6 py-4 w-20 text-center">Icon</th>
                         <th class="px-6 py-4">Nama Fitur</th>
                         <th class="px-6 py-4">Deskripsi</th>
-                        <th class="px-6 py-4 w-40 text-right">Aksi</th>
+                        <th class="px-6 py-4 w-20 text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-body text-brand-ink/80">
                     @php $fIndex = 1; @endphp
                     @forelse($testimonials->where('type', 'feature') as $item)
-                        <tr class="hover:bg-slate-50/50 transition-colors">
+                        <tr class="hover:bg-slate-50/50 transition-colors" :class="selected.includes('{{ $item->id }}') ? 'bg-brand-primary/[0.01]' : ''">
+                            <td class="px-6 py-4 text-center whitespace-nowrap">
+                                <input 
+                                    type="checkbox" 
+                                    value="{{ $item->id }}" 
+                                    x-model="selected"
+                                    class="rounded text-brand-primary focus:ring-brand-accent w-4 h-4 border-slate-200 cursor-pointer"
+                                />
+                            </td>
                             <td class="px-6 py-4 text-center font-bold text-brand-primary">
                                 {{ $fIndex++ }}
                             </td>
@@ -46,18 +73,41 @@
                             <td class="px-6 py-4 text-caption text-brand-ink/65 leading-relaxed">
                                 {{ $item->description }}
                             </td>
-                            <td class="px-6 py-4 text-right">
-                                <div class="flex items-center justify-end gap-2">
-                                    <button wire:click="moveUp({{ $item->id }})" type="button" class="p-1 text-brand-ink/50 hover:text-brand-primary" title="Naik"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"></path></svg></button>
-                                    <button wire:click="moveDown({{ $item->id }})" type="button" class="p-1 text-brand-ink/50 hover:text-brand-primary" title="Turun"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg></button>
-                                    <button wire:click="edit({{ $item->id }})" type="button" class="text-brand-primary font-semibold text-caption pl-2">Edit</button>
-                                    <button wire:click="confirmDelete({{ $item->id }})" type="button" class="text-red-600 font-semibold text-caption pl-1">Hapus</button>
+                            <td class="px-6 py-4 text-center whitespace-nowrap">
+                                <div x-data="{ open: false }" class="relative inline-block text-left">
+                                    <button 
+                                        @click="open = !open" 
+                                        @click.away="open = false" 
+                                        type="button" 
+                                        class="p-2 hover:bg-slate-100 rounded-full transition-colors text-brand-ink/50 hover:text-brand-ink focus:outline-none"
+                                    >
+                                        <svg class="w-4 h-4 mx-auto" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path></svg>
+                                    </button>
+                                    <div 
+                                        x-show="open" 
+                                        x-transition 
+                                        class="absolute right-0 mt-1 w-32 rounded-xl bg-white border border-slate-200 shadow-lg py-1 z-30 text-left text-caption font-semibold"
+                                        style="display: none;"
+                                    >
+                                        <button wire:click="moveUp({{ $item->id }})" type="button" class="w-full text-left px-4 py-2 text-brand-primary hover:bg-slate-50 transition-colors disabled:opacity-30" {{ $loop->first ? 'disabled' : '' }}>
+                                            Pindah Atas
+                                        </button>
+                                        <button wire:click="moveDown({{ $item->id }})" type="button" class="w-full text-left px-4 py-2 text-brand-primary hover:bg-slate-50 transition-colors disabled:opacity-30" {{ $loop->last ? 'disabled' : '' }}>
+                                            Pindah Bawah
+                                        </button>
+                                        <button wire:click="edit({{ $item->id }})" type="button" class="w-full text-left px-4 py-2 text-brand-primary hover:bg-slate-50 transition-colors border-t border-slate-100">
+                                            Edit
+                                        </button>
+                                        <button wire:click="confirmDelete({{ $item->id }})" type="button" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition-colors">
+                                            Hapus
+                                        </button>
+                                    </div>
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-8 text-center text-caption text-brand-ink/50 italic">Belum ada kolom fitur beranda.</td>
+                            <td colspan="6" class="px-6 py-8 text-center text-caption text-brand-ink/50 italic">Belum ada kolom fitur beranda.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -73,16 +123,32 @@
             <table class="w-full text-left border-collapse" aria-label="Testimonials list">
                 <thead>
                     <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-brand-ink/50 uppercase tracking-wider">
+                        <th class="px-6 py-4 w-12 text-center">
+                            <input 
+                                type="checkbox" 
+                                @change="let check = $el.checked; selected = check ? [@foreach($testimonials->where('type', 'testimonial') as $item)'{{ $item->id }}',@endforeach] : []"
+                                :checked="selected.length === {{ $testimonials->where('type', 'testimonial')->count() }} && {{ $testimonials->where('type', 'testimonial')->count() }} > 0"
+                                class="rounded text-brand-primary focus:ring-brand-accent w-4 h-4 border-slate-200 cursor-pointer"
+                            />
+                        </th>
                         <th class="px-6 py-4 w-20 text-center">Urutan</th>
                         <th class="px-6 py-4">Nama Alumni</th>
                         <th class="px-6 py-4">Pesan Testimonial</th>
-                        <th class="px-6 py-4 w-40 text-right">Aksi</th>
+                        <th class="px-6 py-4 w-20 text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-body text-brand-ink/80">
                     @php $tIndex = 1; @endphp
                     @forelse($testimonials->where('type', 'testimonial') as $item)
-                        <tr class="hover:bg-slate-50/50 transition-colors">
+                        <tr class="hover:bg-slate-50/50 transition-colors" :class="selected.includes('{{ $item->id }}') ? 'bg-brand-primary/[0.01]' : ''">
+                            <td class="px-6 py-4 text-center whitespace-nowrap">
+                                <input 
+                                    type="checkbox" 
+                                    value="{{ $item->id }}" 
+                                    x-model="selected"
+                                    class="rounded text-brand-primary focus:ring-brand-accent w-4 h-4 border-slate-200 cursor-pointer"
+                                />
+                            </td>
                             <td class="px-6 py-4 text-center font-bold text-brand-primary">
                                 {{ $tIndex++ }}
                             </td>
@@ -92,18 +158,41 @@
                             <td class="px-6 py-4 text-caption text-brand-ink/65 italic leading-relaxed">
                                 "{{ $item->description }}"
                             </td>
-                            <td class="px-6 py-4 text-right">
-                                <div class="flex items-center justify-end gap-2">
-                                    <button wire:click="moveUp({{ $item->id }})" type="button" class="p-1 text-brand-ink/50 hover:text-brand-primary" title="Naik"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"></path></svg></button>
-                                    <button wire:click="moveDown({{ $item->id }})" type="button" class="p-1 text-brand-ink/50 hover:text-brand-primary" title="Turun"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg></button>
-                                    <button wire:click="edit({{ $item->id }})" type="button" class="text-brand-primary font-semibold text-caption pl-2">Edit</button>
-                                    <button wire:click="confirmDelete({{ $item->id }})" type="button" class="text-red-600 font-semibold text-caption pl-1">Hapus</button>
+                            <td class="px-6 py-4 text-center whitespace-nowrap">
+                                <div x-data="{ open: false }" class="relative inline-block text-left">
+                                    <button 
+                                        @click="open = !open" 
+                                        @click.away="open = false" 
+                                        type="button" 
+                                        class="p-2 hover:bg-slate-100 rounded-full transition-colors text-brand-ink/50 hover:text-brand-ink focus:outline-none"
+                                    >
+                                        <svg class="w-4 h-4 mx-auto" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path></svg>
+                                    </button>
+                                    <div 
+                                        x-show="open" 
+                                        x-transition 
+                                        class="absolute right-0 mt-1 w-32 rounded-xl bg-white border border-slate-200 shadow-lg py-1 z-30 text-left text-caption font-semibold"
+                                        style="display: none;"
+                                    >
+                                        <button wire:click="moveUp({{ $item->id }})" type="button" class="w-full text-left px-4 py-2 text-brand-primary hover:bg-slate-50 transition-colors disabled:opacity-30" {{ $loop->first ? 'disabled' : '' }}>
+                                            Pindah Atas
+                                        </button>
+                                        <button wire:click="moveDown({{ $item->id }})" type="button" class="w-full text-left px-4 py-2 text-brand-primary hover:bg-slate-50 transition-colors disabled:opacity-30" {{ $loop->last ? 'disabled' : '' }}>
+                                            Pindah Bawah
+                                        </button>
+                                        <button wire:click="edit({{ $item->id }})" type="button" class="w-full text-left px-4 py-2 text-brand-primary hover:bg-slate-50 transition-colors border-t border-slate-100">
+                                            Edit
+                                        </button>
+                                        <button wire:click="confirmDelete({{ $item->id }})" type="button" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition-colors">
+                                            Hapus
+                                        </button>
+                                    </div>
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="px-6 py-8 text-center text-caption text-brand-ink/50 italic">Belum ada data testimonial alumni.</td>
+                            <td colspan="5" class="px-6 py-8 text-center text-caption text-brand-ink/50 italic">Belum ada data testimonial alumni.</td>
                         </tr>
                     @endforelse
                 </tbody>

@@ -89,4 +89,17 @@ class EventSessionController extends Controller
         return redirect()->route('admin.event-sessions.index')
             ->with('success', 'Sesi event berhasil dihapus.');
     }
+
+    /**
+     * Remove multiple event sessions from storage.
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (!empty($ids)) {
+            EventSession::whereIn('id', $ids)->delete();
+            return redirect()->route('admin.event-sessions.index')->with('success', count($ids) . ' sesi event terpilih berhasil dihapus.');
+        }
+        return redirect()->route('admin.event-sessions.index')->with('error', 'Tidak ada sesi event yang dipilih.');
+    }
 }
