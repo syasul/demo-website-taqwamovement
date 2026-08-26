@@ -1,0 +1,103 @@
+@import './fonts.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --brand-white: #FAF9F6;
+    --brand-primary: #502E88;
+    --brand-secondary: #7558B1;
+    --brand-accent: #CA80DC;
+    --brand-blush: #E2A5BA;
+    --brand-blush-lt: #EDCCD7;
+    --brand-ink: #241640;
+}
+
+@layer components {
+    .glass-card {
+        background: rgba(250, 249, 246, 0.75);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        box-shadow: 0 20px 50px -10px rgba(80, 46, 136, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.45);
+    }
+    
+    .glass-card-dark {
+        background: rgba(10, 15, 29, 0.6);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.25);
+    }
+
+    .glass-button {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .glass-button:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.3);
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
+    }
+    
+    .glass-input {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #FFFFFF;
+        transition: all 0.3s ease;
+    }
+    
+    .glass-input:focus {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(202, 128, 220, 0.5);
+        box-shadow: 0 0 12px rgba(202, 128, 220, 0.2);
+        outline: none;
+    }
+
+    .bg-mesh-glow {
+        position: relative;
+        background-color: #0A0F1D;
+        overflow: hidden;
+    }
+    
+    .bg-mesh-glow::before {
+        content: '';
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        top: -150px;
+        left: -150px;
+        background: none;
+        filter: blur(80px);
+        pointer-events: none;
+        z-index: 0;
+        animation: pulseBlob 12s infinite alternate;
+    }
+    
+    .bg-mesh-glow::after {
+        content: '';
+        position: absolute;
+        width: 500px;
+        height: 500px;
+        bottom: -100px;
+        right: -100px;
+        background: none;
+        filter: blur(80px);
+        pointer-events: none;
+        z-index: 0;
+        animation: pulseBlob 15s infinite alternate-reverse;
+    }
+
+    @keyframes pulseBlob {
+        0% { transform: scale(1) translate(0, 0); }
+        100% { transform: scale(1.15) translate(40px, 40px); }
+    }
+}
+
