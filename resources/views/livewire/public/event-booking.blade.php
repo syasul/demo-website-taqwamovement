@@ -46,19 +46,29 @@
                                     <span class="text-body-lg font-bold text-brand-primary">Rp {{ number_format($type->price, 0, ',', '.') }}</span>
                                 </div>
                                 
-                                @if(!$isSoldOut)
-                                    <div class="relative">
-                                        <select 
-                                            wire:model.live="quantities.{{ $type->id }}" 
-                                            class="w-20 appearance-none bg-brand-white border border-brand-primary/20 hover:border-brand-primary/40 text-brand-ink rounded-full pl-4 pr-8 py-2.5 text-caption font-semibold focus:ring-2 focus:ring-brand-accent focus:border-brand-accent focus:outline-none transition-all duration-300"
+                                 @if(!$isSoldOut)
+                                    <div class="flex items-center gap-3 bg-brand-white/60 border border-brand-primary/10 rounded-full p-1.5 shadow-sm">
+                                        <button 
+                                            type="button"
+                                            wire:click="decrementTicket({{ $type->id }})"
+                                            class="w-8 h-8 rounded-full bg-brand-white border border-brand-primary/10 hover:border-brand-primary hover:bg-brand-primary/5 text-brand-primary flex items-center justify-center transition-all duration-200 focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed"
+                                            {{ ($quantities[$type->id] ?? 0) <= 0 ? 'disabled' : '' }}
+                                            aria-label="Kurangi tiket"
                                         >
-                                            @for ($i = 0; $i <= min($available, $type->max_per_transaction); $i++)
-                                                <option value="{{ $i }}" class="text-brand-ink">{{ $i }}</option>
-                                            @endfor
-                                        </select>
-                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-brand-primary">
-                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                                        </div>
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4"></path></svg>
+                                        </button>
+                                        <span class="w-6 text-center text-caption font-bold text-brand-primary select-none">
+                                            {{ $quantities[$type->id] ?? 0 }}
+                                        </span>
+                                        <button 
+                                            type="button"
+                                            wire:click="incrementTicket({{ $type->id }})"
+                                            class="w-8 h-8 rounded-full bg-brand-primary hover:bg-brand-secondary text-brand-white flex items-center justify-center transition-all duration-200 focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+                                            {{ ($quantities[$type->id] ?? 0) >= min($available, $type->max_per_transaction) ? 'disabled' : '' }}
+                                            aria-label="Tambah tiket"
+                                        >
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                                        </button>
                                     </div>
                                 @else
                                     <span class="text-caption text-brand-ink/40 font-semibold px-5 py-2.5 border border-dashed border-brand-ink/20 rounded-full bg-slate-50">Habis</span>
@@ -80,7 +90,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         @foreach ($attendees as $index => $attendee)
                             @php
-                                $ticketName = $ticketTypes->firstWhere('id', $attendee['ticket_type_id'])->name ?? 'Tiket';
+                                $ticketName = $ticketTypes->firstWhere('id', $attendee['ticket_type_id'])?->name ?? 'Tiket';
                             @endphp
                             <x-ui.glass-card class="space-y-5 border border-brand-accent/20 relative pt-8 bg-brand-white/60">
                                 <div class="absolute -top-3.5 left-6 px-4 py-1 rounded-full bg-brand-primary text-brand-white text-xs font-bold shadow-md">
@@ -136,12 +146,12 @@
                     @foreach ($quantities as $typeId => $qty)
                         @if ($qty > 0)
                             @php
-                                $type = $ticketTypes->firstWhere('id', $typeId);
+                                $type = $ticketTypes->firstWhere('id', intval($typeId));
                                 $hasTickets = true;
                             @endphp
                             <div class="flex justify-between items-start gap-4">
-                                <span class="font-medium text-brand-ink/80">{{ $type->name }} <strong class="text-brand-primary">x{{ $qty }}</strong></span>
-                                <span class="font-bold text-brand-primary">Rp {{ number_format($type->price * $qty, 0, ',', '.') }}</span>
+                                <span class="font-medium text-brand-ink/80">{{ $type?->name }} <strong class="text-brand-primary">x{{ $qty }}</strong></span>
+                                <span class="font-bold text-brand-primary">Rp {{ number_format(($type?->price ?? 0) * $qty, 0, ',', '.') }}</span>
                             </div>
                         @endif
                     @endforeach

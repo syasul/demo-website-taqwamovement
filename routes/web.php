@@ -89,8 +89,8 @@ require __DIR__.'/auth.php';
 
 // Payment & Checkout Routes
 Route::post('/checkout/callback', [\App\Http\Controllers\Checkout\PaymentCallbackController::class, 'handle'])->name('checkout.callback');
-Route::get('/checkout/{order:order_number}/status', [\App\Http\Controllers\Checkout\CheckoutController::class, 'status'])->name('checkout.status')->middleware('auth');
-Route::get('/checkout/{order:order_number}/status/json', [\App\Http\Controllers\Checkout\CheckoutController::class, 'checkStatusJson'])->name('checkout.status.json')->middleware('auth');
+Route::get('/checkout/{order:order_number}/status', [\App\Http\Controllers\Checkout\CheckoutController::class, 'status'])->name('checkout.status');
+Route::get('/checkout/{order:order_number}/status/json', [\App\Http\Controllers\Checkout\CheckoutController::class, 'checkStatusJson'])->name('checkout.status.json');
 
 Route::get('/design-system', function () {
     return view('pages.design-system');

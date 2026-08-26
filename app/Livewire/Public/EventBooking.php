@@ -78,7 +78,43 @@ class EventBooking extends Component
 
             $this->quantities[$id] = $qty;
         }
+    }
 
+    public function incrementTicket($typeId)
+    {
+        $this->validationError = '';
+        $type = TicketType::find($typeId);
+        if (!$type) return;
+
+        $currentQty = $this->quantities[$typeId] ?? 0;
+        $qty = $currentQty + 1;
+
+        // Check stock limit
+        $availableStock = $type->available_stock;
+        if ($qty > $availableStock) {
+            $qty = $availableStock;
+            $this->validationError = "Stok tiket '{$type->name}' terbatas, hanya tersisa {$availableStock} tiket.";
+        }
+
+        // Check transaction limit
+        if ($qty > $type->max_per_transaction) {
+            $qty = $type->max_per_transaction;
+            $this->validationError = "Maksimum pembelian tiket '{$type->name}' adalah {$type->max_per_transaction} per transaksi.";
+        }
+
+        $this->quantities[$typeId] = $qty;
+        $this->calculateTotals();
+        $this->rebuildAttendeeFields();
+    }
+
+    public function decrementTicket($typeId)
+    {
+        $this->validationError = '';
+        $currentQty = $this->quantities[$typeId] ?? 0;
+        $qty = $currentQty - 1;
+        if ($qty < 0) $qty = 0;
+
+        $this->quantities[$typeId] = $qty;
         $this->calculateTotals();
         $this->rebuildAttendeeFields();
     }
@@ -87,7 +123,7 @@ class EventBooking extends Component
     {
         $this->subtotal = 0;
         foreach ($this->quantities as $id => $qty) {
-            $type = $this->ticketTypes->firstWhere('id', $id);
+            $type = $this->ticketTypes->firstWhere('id', intval($id));
             if ($type && $qty > 0) {
                 $this->subtotal += $type->price * $qty;
             }
@@ -127,11 +163,11 @@ class EventBooking extends Component
         foreach ($this->quantities as $typeId => $qty) {
             for ($i = 0; $i < $qty; $i++) {
                 // Keep existing inputs if possible
-                $existing = collect($this->attendees)->firstWhere('ticket_type_id', $typeId);
+                $existing = collect($this->attendees)->firstWhere('ticket_type_id', intval($typeId));
                 $newAttendees[$index] = [
                     'name' => $existing['name'] ?? '',
                     'email' => $existing['email'] ?? '',
-                    'ticket_type_id' => $typeId
+                    'ticket_type_id' => intval($typeId)
                 ];
                 $index++;
             }

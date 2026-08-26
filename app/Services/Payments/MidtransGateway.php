@@ -58,6 +58,8 @@ class MidtransGateway implements PaymentGatewayInterface
             ];
         }
 
+        $firstItem = $order->items->first();
+
         // Prepare Snap Payload
         $payload = [
             'transaction_details' => [
@@ -66,9 +68,9 @@ class MidtransGateway implements PaymentGatewayInterface
             ],
             'item_details' => $itemDetails,
             'customer_details' => [
-                'first_name' => $order->user->name,
-                'email' => $order->user->email,
-                'phone' => $order->user->phone ?? '',
+                'first_name' => $order->user?->name ?? $firstItem?->attendee_name ?? 'Guest',
+                'email' => $order->user?->email ?? $firstItem?->attendee_email ?? 'guest@taqwamovement.id',
+                'phone' => $order->user?->phone ?? '',
             ],
             'expiry' => [
                 'start_time' => now()->format('Y-m-d H:i:s O'),

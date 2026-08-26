@@ -58,7 +58,7 @@
                     <div class="p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl text-left space-y-2 text-caption">
                         <div class="flex justify-between text-brand-white/70">
                             <span>Nama Peserta:</span>
-                            <span class="font-semibold text-brand-white">{{ auth()->user()->name }}</span>
+                            <span class="font-semibold text-brand-white">{{ $order->user?->name ?? $order->items->first()?->attendee_name ?? 'Guest' }}</span>
                         </div>
                         <div class="flex justify-between text-brand-white/70">
                             <span>Event:</span>
@@ -67,14 +67,15 @@
                     </div>
 
                     <div class="space-y-3 pt-4">
-                        <!-- We will add the my-tickets route next in Phase 5! -->
-                        <x-ui.glass-button 
-                            variant="light"
-                            href="/dashboard/tiket-saya"
-                            class="w-full text-brand-primary"
-                        >
-                            Lihat Tiket Saya
-                        </x-ui.glass-button>
+                        @auth
+                            <x-ui.glass-button 
+                                variant="light"
+                                href="/dashboard/tiket-saya"
+                                class="w-full text-brand-primary"
+                            >
+                                Lihat Tiket Saya
+                            </x-ui.glass-button>
+                        @endauth
                         <x-ui.glass-button 
                             variant="light"
                             href="/"

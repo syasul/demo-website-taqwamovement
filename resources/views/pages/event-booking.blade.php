@@ -30,8 +30,7 @@
             <div class="max-w-xl mx-auto pt-6">
                 <div class="flex items-center justify-between relative">
                     <!-- Progress line background -->
-                    <div class="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-0.5 bg-brand-white/10 z-0"></div>
-                    <div class="absolute left-0 right-1/2 top-1/2 -translate-y-1/2 h-0.5 bg-brand-accent z-0"></div>
+                    <div class="absolute left-4 right-4 top-4 -translate-y-1/2 h-0.5 bg-brand-white/10 z-0"></div>
 
                     <!-- Step 1: Active -->
                     <div class="flex flex-col items-center gap-2 relative z-10">

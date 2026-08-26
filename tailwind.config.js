@@ -22,7 +22,7 @@ export default {
                     ink: '#241640',
                     navy: '#0A0F1D',
                     gold: '#C5A880',
-                    cream: '#F9F6F0',
+                    cream: '#FAF3F5',
                     glass: 'rgba(255, 255, 255, 0.08)',
                 }
             },

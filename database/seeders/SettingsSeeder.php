@@ -52,13 +52,13 @@ class SettingsSeeder extends Seeder
                 'group' => 'social',
             ],
             [
-                'key' => 'social.linkedin',
-                'value' => 'https://linkedin.com/company/taqwamovement',
+                'key' => 'social.threads',
+                'value' => 'https://www.threads.com/@taqwamovement?igshid=NTc4MTIwNjQ2YQ==',
                 'group' => 'social',
             ],
             [
-                'key' => 'social.x',
-                'value' => 'https://x.com/taqwamovement',
+                'key' => 'social.tiktok',
+                'value' => 'https://www.tiktok.com/@taqwamovement?_r=1&_t=ZS-99CJz82m22a',
                 'group' => 'social',
             ],
 

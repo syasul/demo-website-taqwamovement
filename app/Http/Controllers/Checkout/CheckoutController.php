@@ -13,9 +13,14 @@ class CheckoutController extends Controller
      */
     public function status(Order $order)
     {
-        // Restrict status page access to the order owner or admin
-        if (auth()->id() !== $order->user_id && !auth()->user()->is_admin) {
-            abort(403);
+        // Restrict status page access to the order owner or admin if the order is associated with a user
+        if ($order->user_id !== null) {
+            if (!auth()->check()) {
+                return redirect()->route('login');
+            }
+            if (auth()->id() !== $order->user_id && !auth()->user()->is_admin) {
+                abort(403);
+            }
         }
 
         $order->load(['event', 'items.eTicket', 'payment']);
@@ -32,13 +37,18 @@ class CheckoutController extends Controller
      */
     public function checkStatusJson(Order $order)
     {
-        if (auth()->id() !== $order->user_id && !auth()->user()->is_admin) {
-            return response()->json(['error' => 'Unauthorized'], 403);
+        if ($order->user_id !== null) {
+            if (!auth()->check()) {
+                return response()->json(['error' => 'Unauthorized'], 401);
+            }
+            if (auth()->id() !== $order->user_id && !auth()->user()->is_admin) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
         }
 
         return response()->json([
             'status' => $order->status,
-            'redirect_url' => route('dashboard.my-tickets') // We will build the my-tickets route next in Phase 5!
+            'redirect_url' => auth()->check() ? route('dashboard.my-tickets') : '/'
         ]);
     }
 }
