@@ -5,7 +5,7 @@
 @tailwind utilities;
 
 :root {
-    --brand-white: #FAF9F6;
+    --brand-white: #FFFFFF;
     --brand-primary: #502E88;
     --brand-secondary: #7558B1;
     --brand-accent: #CA80DC;

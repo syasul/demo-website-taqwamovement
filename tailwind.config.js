@@ -13,7 +13,7 @@ export default {
         extend: {
             colors: {
                 brand: {
-                    white: '#FAF9F6',
+                    white: '#FFFFFF',
                     primary: '#502E88',
                     secondary: '#7558B1',
                     accent: '#CA80DC',
@@ -27,9 +27,9 @@ export default {
                 }
             },
             fontFamily: {
-                sans: ['Poppins', ...defaultTheme.fontFamily.sans],
-                serif: ['Poppins', ...defaultTheme.fontFamily.serif],
-                accent: ['Poppins', 'sans-serif'],
+                sans: ['Inter Tight', 'Poppins', ...defaultTheme.fontFamily.sans],
+                serif: ['DM Serif Display', ...defaultTheme.fontFamily.serif],
+                accent: ['Andala Script', 'Alex Brush', 'cursive', 'sans-serif'],
             },
             fontSize: {
                 'hero': ['3.5rem', { lineHeight: '1.1', letterSpacing: '-0.02em' }],
