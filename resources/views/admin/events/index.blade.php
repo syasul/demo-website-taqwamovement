@@ -1,17 +1,18 @@
 <x-layouts.admin>
     @section('page_title', 'Kelola Event')
 
-    <div x-data="{ selected: [] }">
+    <div x-data="{ selected: [], singleDeleteUrl: '' }">
         <!-- Top Action Header -->
         <div class="mb-6 flex justify-between items-center flex-wrap gap-4">
             <p class="text-caption text-brand-ink/60">Kelola detail program kajian, rundown sesi, pembicara, dan detail pembelian tiket.</p>
             <div class="flex items-center gap-3">
                 <!-- Bulk Delete Action -->
+                <!-- Bulk Delete Action -->
                 <button 
-                    x-show="selected.length > 0" 
+                    x-show="selected.length > 0"
                     @click="$dispatch('open-modal', 'bulk-delete-confirm-modal')"
                     type="button" 
-                    class="inline-flex items-center justify-center px-4 py-2.5 rounded-full text-brand-white bg-red-600 hover:bg-red-700 font-medium tracking-wide text-caption shadow-brand-soft hover:-translate-y-0.5 transition-all duration-300 focus:outline-none"
+                    class="inline-flex items-center justify-center px-4 py-2.5 rounded-full text-brand-white bg-red-600 hover:bg-red-700 font-medium tracking-wide text-caption shadow-brand-soft hover:-translate-y-0.5 transition-all duration-300 focus:outline-none shrink-0"
                     style="display: none;"
                 >
                     Hapus Terpilih (<span x-text="selected.length"></span>)
@@ -100,13 +101,13 @@
                                             <a href="{{ route('admin.events.edit', $event->id) }}" class="block px-4 py-2 text-brand-primary hover:bg-slate-50 transition-colors">
                                                 Edit
                                             </a>
-                                            <form method="POST" action="{{ route('admin.events.destroy', $event->id) }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus event ini?');" class="block w-full">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition-colors">
-                                                    Hapus
-                                                </button>
-                                            </form>
+                                            <button 
+                                                @click="singleDeleteUrl = '{{ route('admin.events.destroy', $event->id) }}'; $dispatch('open-modal', 'single-delete-confirm-modal')"
+                                                type="button" 
+                                                class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition-colors"
+                                            >
+                                                Hapus
+                                            </button>
                                         </div>
                                     </div>
                                 </td>
@@ -121,41 +122,64 @@
                     </tbody>
                 </table>
             </div>
-        </div>
+        <!-- Bulk Delete Confirmation Modal -->
+        <x-ui.modal id="bulk-delete-confirm-modal" title="Konfirmasi Hapus Terpilih">
+            <form method="POST" action="{{ route('admin.events.bulk-destroy') }}">
+                @csrf
+                @method('DELETE')
+                <template x-for="id in selected" :key="id">
+                    <input type="hidden" name="ids[]" :value="id">
+                </template>
+
+                <div class="space-y-6">
+                    <p class="text-body text-brand-ink/75">
+                        Apakah Anda yakin ingin menghapus <span class="font-bold text-red-600" x-text="selected.length"></span> event terpilih? Tindakan ini tidak dapat dibatalkan.
+                    </p>
+                    <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                        <button 
+                            @click="$dispatch('close-modal', 'bulk-delete-confirm-modal')" 
+                            type="button" 
+                            class="px-5 py-2.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-caption font-medium transition-all"
+                        >
+                            Batal
+                        </button>
+                        <button 
+                            type="submit" 
+                            class="px-5 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-brand-white text-caption font-semibold transition-all shadow-md"
+                        >
+                            Hapus Permanen
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </x-ui.modal>
+
+        <!-- Single Delete Confirmation Modal -->
+        <x-ui.modal id="single-delete-confirm-modal" title="Konfirmasi Hapus Event">
+            <form method="POST" :action="singleDeleteUrl">
+                @csrf
+                @method('DELETE')
+                <div class="space-y-6">
+                    <p class="text-body text-brand-ink/75">
+                        Apakah Anda yakin ingin menghapus event ini? Tindakan ini tidak dapat dibatalkan.
+                    </p>
+                    <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                        <button 
+                            @click="$dispatch('close-modal', 'single-delete-confirm-modal')" 
+                            type="button" 
+                            class="px-5 py-2.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-caption font-medium transition-all"
+                        >
+                            Batal
+                        </button>
+                        <button 
+                            type="submit" 
+                            class="px-5 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-brand-white text-caption font-semibold transition-all shadow-md"
+                        >
+                            Hapus Permanen
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </x-ui.modal>
     </div>
-
-    <!-- Bulk Delete Confirmation Modal -->
-    <x-ui.modal id="bulk-delete-confirm-modal" title="Konfirmasi Hapus Terpilih">
-        <form 
-            method="POST" 
-            action="{{ route('admin.events.bulk-destroy') }}" 
-            class="space-y-6"
-        >
-            @csrf
-            @method('DELETE')
-            <template x-for="id in selected" :key="id">
-                <input type="hidden" name="ids[]" :value="id">
-            </template>
-
-            <p class="text-body text-brand-ink/75">
-                Apakah Anda yakin ingin menghapus <span class="font-bold text-red-600" x-text="selected.length"></span> event terpilih? Tindakan ini tidak dapat dibatalkan.
-            </p>
-            
-            <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
-                <button 
-                    @click="$dispatch('close-modal', 'bulk-delete-confirm-modal')" 
-                    type="button" 
-                    class="px-5 py-2.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-caption font-medium transition-all"
-                >
-                    Batal
-                </button>
-                <button 
-                    type="submit" 
-                    class="px-5 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-brand-white text-caption font-semibold transition-all shadow-md"
-                >
-                    Hapus Permanen
-                </button>
-            </div>
-        </form>
-    </x-ui.modal>
 </x-layouts.admin>

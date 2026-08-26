@@ -7,7 +7,7 @@
             <!-- Bulk Delete Action -->
             <button 
                 x-show="selected.length > 0"
-                @click="if(confirm('Apakah Anda yakin ingin menghapus ' + selected.length + ' pesan terpilih?')) { $wire.deleteSelected(selected).then(() => selected = []) }"
+                @click="$dispatch('open-modal', 'bulk-delete-confirm-modal')"
                 type="button" 
                 class="inline-flex items-center justify-center px-4 py-2.5 rounded-full text-brand-white bg-red-600 hover:bg-red-700 font-medium tracking-wide text-caption shadow-brand-soft focus:outline-none shrink-0"
                 style="display: none;"
@@ -197,4 +197,29 @@
             </div>
         </x-ui.modal>
     @endif
+
+    <!-- Bulk Delete Confirmation Modal -->
+    <x-ui.modal id="bulk-delete-confirm-modal" title="Konfirmasi Hapus Terpilih">
+        <div class="space-y-6">
+            <p class="text-body text-brand-ink/75">
+                Apakah Anda yakin ingin menghapus <span class="font-bold text-red-600" x-text="selected.length"></span> pesan terpilih? Tindakan ini tidak dapat dibatalkan.
+            </p>
+            <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                <button 
+                    @click="$dispatch('close-modal', 'bulk-delete-confirm-modal')" 
+                    type="button" 
+                    class="px-5 py-2.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-caption font-medium transition-all"
+                >
+                    Batal
+                </button>
+                <button 
+                    @click="$wire.deleteSelected(selected).then(() => { selected = []; $dispatch('close-modal', 'bulk-delete-confirm-modal'); })"
+                    type="button" 
+                    class="px-5 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-brand-white text-caption font-semibold transition-all shadow-md"
+                >
+                    Hapus Permanen
+                </button>
+            </div>
+        </div>
+    </x-ui.modal>
 </div>
