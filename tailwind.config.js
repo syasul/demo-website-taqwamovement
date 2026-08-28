@@ -27,7 +27,7 @@ export default {
                 }
             },
             fontFamily: {
-                sans: ['Inter Tight', 'Poppins', ...defaultTheme.fontFamily.sans],
+                sans: ['Poppins', ...defaultTheme.fontFamily.sans],
                 serif: ['DM Serif Display', ...defaultTheme.fontFamily.serif],
                 accent: ['Andala Script', 'Alex Brush', 'cursive', 'sans-serif'],
             },
