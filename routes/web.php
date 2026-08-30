@@ -8,6 +8,78 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
+// =========================================================================
+// 1. AREA ADMIN (SUBDOMAIN: hq.taqwamovement.co.id)
+// =========================================================================
+// Kita hapus prefix('admin') karena subdomain sudah menjadi penggantinya.
+Route::domain('hq.taqwamovement.co.id')
+    ->middleware(['auth', 'verified', 'admin'])
+    ->name('admin.')
+    ->group(function () {
+
+        Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+
+        Route::get('/phases', function () {
+            return view('admin.phases.index');
+        })->name('phases.index');
+
+        Route::delete('/events/bulk', [\App\Http\Controllers\Admin\EventController::class, 'bulkDestroy'])->name('events.bulk-destroy');
+        Route::resource('/events', \App\Http\Controllers\Admin\EventController::class)->except(['show']);
+
+        Route::get('/speakers', function () {
+            return view('admin.speakers.index');
+        })->name('speakers.index');
+
+        Route::get('/testimonials', function () {
+            return view('admin.testimonials.index');
+        })->name('testimonials.index');
+
+        Route::resource('/posts', \App\Http\Controllers\Admin\PostController::class)->except(['show']);
+
+        Route::get('/messages', function () {
+            return view('admin.messages.index');
+        })->name('messages.index');
+
+        Route::get('/settings', function () {
+            return view('admin.settings.index');
+        })->name('settings.index');
+
+        Route::get('/categories', function () {
+            return view('admin.categories.index');
+        })->name('categories.index');
+
+        Route::get('/users', function () {
+            return view('admin.users.index');
+        })->name('users.index');
+
+        Route::get('/activity-log', function () {
+            return view('admin.activity-log.index');
+        })->name('activity-log.index');
+
+        // QR Check-in System
+        Route::get('/check-in', [\App\Http\Controllers\Admin\CheckInController::class, 'showScanner'])->name('check-in');
+        Route::post('/check-in/scan', [\App\Http\Controllers\Admin\CheckInController::class, 'processScan'])->name('check-in.scan');
+
+        // CMS Extensions Resources CRUD
+        Route::delete('/ticket-types/bulk', [\App\Http\Controllers\Admin\TicketTypeController::class, 'bulkDestroy'])->name('ticket-types.bulk-destroy');
+        Route::resource('/ticket-types', \App\Http\Controllers\Admin\TicketTypeController::class)->except(['show']);
+
+        Route::delete('/promo-codes/bulk', [\App\Http\Controllers\Admin\PromoCodeController::class, 'bulkDestroy'])->name('promo-codes.bulk-destroy');
+        Route::resource('/promo-codes', \App\Http\Controllers\Admin\PromoCodeController::class)->except(['show']);
+
+        Route::delete('/event-sessions/bulk', [\App\Http\Controllers\Admin\EventSessionController::class, 'bulkDestroy'])->name('event-sessions.bulk-destroy');
+        Route::resource('/event-sessions', \App\Http\Controllers\Admin\EventSessionController::class)->except(['show']);
+
+        Route::get('/orders', [\App\Http\Controllers\Admin\OrderController::class, 'index'])->name('orders.index');
+        Route::get('/reports', [\App\Http\Controllers\Admin\OrderController::class, 'report'])->name('reports.index');
+        Route::get('/reports/export', [\App\Http\Controllers\Admin\OrderController::class, 'export'])->name('reports.export');
+    });
+
+
+// =========================================================================
+// 2. AREA PUBLIK & USER BIASA (DOMAIN UTAMA)
+// =========================================================================
+
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about', function () {
     $activeEvent = \App\Models\Event::where('status', \App\Enums\EventStatus::PUBLISHED)
@@ -24,52 +96,8 @@ Route::get('/blog/{post:slug}', [BlogController::class, 'show'])->name('blog.sho
 Route::get('/kontak', [ContactController::class, 'show'])->name('contact.show');
 Route::get('/sitemap.xml', [SitemapController::class, 'index']);
 
-Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/phases', function () {
-        return view('admin.phases.index');
-    })->name('phases.index');
-    Route::delete('/events/bulk', [\App\Http\Controllers\Admin\EventController::class, 'bulkDestroy'])->name('events.bulk-destroy');
-    Route::resource('/events', \App\Http\Controllers\Admin\EventController::class)->except(['show']);
-    Route::get('/speakers', function () {
-        return view('admin.speakers.index');
-    })->name('speakers.index');
-    Route::get('/testimonials', function () {
-        return view('admin.testimonials.index');
-    })->name('testimonials.index');
-    Route::resource('/posts', \App\Http\Controllers\Admin\PostController::class)->except(['show']);
-    Route::get('/messages', function () {
-        return view('admin.messages.index');
-    })->name('messages.index');
-    Route::get('/settings', function () {
-        return view('admin.settings.index');
-    })->name('settings.index');
-    Route::get('/categories', function () {
-        return view('admin.categories.index');
-    })->name('categories.index');
-    Route::get('/users', function () {
-        return view('admin.users.index');
-    })->name('users.index');
-    Route::get('/activity-log', function () {
-        return view('admin.activity-log.index');
-    })->name('activity-log.index');
-
-    // QR Check-in System
-    Route::get('/check-in', [\App\Http\Controllers\Admin\CheckInController::class, 'showScanner'])->name('check-in');
-    Route::post('/check-in/scan', [\App\Http\Controllers\Admin\CheckInController::class, 'processScan'])->name('check-in.scan');
-
-    // CMS Extensions Resources CRUD
-    Route::delete('/ticket-types/bulk', [\App\Http\Controllers\Admin\TicketTypeController::class, 'bulkDestroy'])->name('ticket-types.bulk-destroy');
-    Route::resource('/ticket-types', \App\Http\Controllers\Admin\TicketTypeController::class)->except(['show']);
-    Route::delete('/promo-codes/bulk', [\App\Http\Controllers\Admin\PromoCodeController::class, 'bulkDestroy'])->name('promo-codes.bulk-destroy');
-    Route::resource('/promo-codes', \App\Http\Controllers\Admin\PromoCodeController::class)->except(['show']);
-    Route::delete('/event-sessions/bulk', [\App\Http\Controllers\Admin\EventSessionController::class, 'bulkDestroy'])->name('event-sessions.bulk-destroy');
-    Route::resource('/event-sessions', \App\Http\Controllers\Admin\EventSessionController::class)->except(['show']);
-    Route::get('/orders', [\App\Http\Controllers\Admin\OrderController::class, 'index'])->name('orders.index');
-    Route::get('/reports', [\App\Http\Controllers\Admin\OrderController::class, 'report'])->name('reports.index');
-    Route::get('/reports/export', [\App\Http\Controllers\Admin\OrderController::class, 'export'])->name('reports.export');
-});
-
+// Logika Redirect Cerdas (Tetap dipertahankan)
+// Jika admin login, akan otomatis dilempar ke rute admin.dashboard (yang sekarang ada di hq.)
 Route::get('/dashboard', function () {
     if (auth()->check() && (auth()->user()->role === 'super-admin' || auth()->user()->role === 'editor' || auth()->user()->is_admin)) {
         return redirect()->route('admin.dashboard');
@@ -89,6 +117,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/riwayat-transaksi', [\App\Http\Controllers\Dashboard\TicketController::class, 'transactions'])->name('dashboard.transactions');
 });
 
+// File auth.php ini menangani rute /login, /register, dll.
+// Dibiarkan di luar agar bisa diakses dari domain utama maupun subdomain hq.
 require __DIR__.'/auth.php';
 
 // Payment & Checkout Routes
