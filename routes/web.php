@@ -17,6 +17,9 @@ Route::domain('hq.taqwamovement.co.id')
     ->name('admin.')
     ->group(function () {
 
+        require __DIR__.'/auth.php';
+
+
         Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
 
         Route::get('/phases', function () {
@@ -119,7 +122,6 @@ Route::middleware('auth')->group(function () {
 
 // File auth.php ini menangani rute /login, /register, dll.
 // Dibiarkan di luar agar bisa diakses dari domain utama maupun subdomain hq.
-require __DIR__.'/auth.php';
 
 // Payment & Checkout Routes
 Route::post('/checkout/callback', [\App\Http\Controllers\Checkout\PaymentCallbackController::class, 'handle'])->name('checkout.callback');
