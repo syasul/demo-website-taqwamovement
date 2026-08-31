@@ -17,14 +17,14 @@ beforeEach(function () {
 });
 
 test('guests are redirected from admin dashboard', function () {
-    $response = $this->get('/admin');
+    $response = $this->get(route('admin.dashboard'));
     $response->assertRedirect('/login');
 });
 
 test('non-admin users get 403 access denied on admin dashboard', function () {
     $user = User::factory()->create(); // Standard user without roles
     
-    $response = $this->actingAs($user)->get('/admin');
+    $response = $this->actingAs($user)->get(route('admin.dashboard'));
     $response->assertStatus(403);
 });
 
@@ -32,7 +32,7 @@ test('authorized users can access the admin dashboard', function () {
     $admin = User::factory()->create();
     $admin->givePermissionTo('access-admin');
 
-    $response = $this->actingAs($admin)->get('/admin');
+    $response = $this->actingAs($admin)->get(route('admin.dashboard'));
     $response->assertStatus(200);
 });
 
